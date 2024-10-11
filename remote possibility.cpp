@@ -1,4 +1,4 @@
-#include <M5Stack.h>
+#include <M5Unified.h>        // Updated for M5 Cardputer compatibility
 #include <IRremoteESP8266.h>  // For IR transmission
 #include <IRsend.h>           // To send IR signals
 #include <IRutils.h>          // To decode IR signals
@@ -11,6 +11,7 @@
 #define RF_CE_PIN       15   // RF Chip Enable
 #define RF_CS_PIN       5    // RF Chip Select
 #define REMOTE_FILE_DIR "/remote_names/"  // Directory to save remote names
+#define LIGHTCYAN 0xE0FFFF  // Define light cyan color
 
 // Initialize the necessary objects
 IRrecv irrecv(IR_RECEIVE_PIN);
@@ -47,7 +48,9 @@ void sendIRSignal(uint32_t data, uint16_t nbits);  // New function for IR transm
 void sendRFSignal(String data);                    // New function for RF transmission
 
 void setup() {
-    M5.begin();
+    auto cfg = M5.config();       // Configuration for M5 Cardputer
+    cfg.output_power = true;      // Set output power
+    M5.begin(cfg);                // M5 initialization for Cardputer
     M5.Lcd.clear();
     
     // Initialize SD card
