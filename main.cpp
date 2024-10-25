@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <M5Unified.h>        // Updated for M5 Cardputer compatibility
 #include <IRremote.h>         // Use IRremote for handling IR signals
 #include <RF24.h>             // For RF transmission
