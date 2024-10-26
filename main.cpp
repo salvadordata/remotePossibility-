@@ -31,7 +31,6 @@ void sendIRSignal(uint32_t data, uint16_t nbits);
 void sendRF24Signal(String data);
 void sendRF433Signal(unsigned long data);
 void handleKeyPress(char key);
-void initSDCard();
 
 class M5_KB {
 public:
@@ -84,13 +83,23 @@ void setup() {
     displayIntro();
     Serial.println("Display intro complete.");
 
-    initSDCard(); // Initialize SD card with feedback
-    Serial.println("SD card initialization complete.");
+    // SD Card initialization with detection check
+    if (!SD.begin()) {
+        M5.Display.setCursor(0, 100);
+        M5.Display.setTextSize(2);
+        M5.Display.setTextColor(RED);
+        M5.Display.println("SD Card Mount Failed");
+        Serial.println("SD Card initialization failed.");
+    } else {
+        Serial.println("SD Card initialized successfully.");
+    }
 
+    // Initialize IR receiver
     Serial.println("Initializing IR Receiver...");
     IrReceiver.enableIRIn();
     Serial.println("IR Receiver initialized.");
 
+    // Initialize RF24 module with check
     Serial.println("Initializing RF24...");
     if (!radio.begin()) {
         M5.Display.println("2.4 GHz RF init failed!");
@@ -100,11 +109,13 @@ void setup() {
         Serial.println("RF24 initialized.");
     }
 
+    // Initialize 433 MHz RF module
     Serial.println("Initializing RCSwitch...");
     rf433Switch.enableReceive(digitalPinToInterrupt(RF_433_RECEIVE_PIN));
     rf433Switch.enableTransmit(RF_433_SEND_PIN);
     Serial.println("RCSwitch initialized.");
 
+    // Initialize I2C and CardKB keyboard
     Serial.println("Initializing I2C and CardKB...");
     Wire.begin();
     CardKB.begin();
@@ -354,28 +365,5 @@ void playbackSavedButton(String buttonName) {
         M5.Display.clear();
         M5.Display.print("Button not found.");
         delay(2000);
-    }
-}
-
-void initSDCard() {
-    int retries = 3;
-    bool sdInitialized = false;
-
-    M5.Display.setCursor(0, 50);
-    M5.Display.setTextSize(2);
-    M5.Display.setTextColor(YELLOW);
-    M5.Display.println("Initializing SD...");
-
-    while (!sdInitialized && retries-- > 0) {
-        sdInitialized = SD.begin();
-        delay(500);
-    }
-
-    if (!sdInitialized) {
-        M5.Display.setTextColor(RED);
-        M5.Display.println("SD Card Mount Failed.");
-    } else {
-        M5.Display.setTextColor(GREEN);
-        M5.Display.println("SD Card Mounted.");
     }
 }
