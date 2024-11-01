@@ -83,13 +83,17 @@ void setup() {
     displayIntro();
     Serial.println("Display intro complete.");
 
+    // Initialize SPI communication
+    SPI.begin(40, 39, 14, SD_CS_PIN);
+
     // SD Card initialization with detection check
-    if (!SD.begin()) {
+    if (!SD.begin(SD_CS_PIN)) {
         M5.Display.setCursor(0, 100);
         M5.Display.setTextSize(2);
         M5.Display.setTextColor(RED);
         M5.Display.println("SD Card Mount Failed");
         Serial.println("SD Card initialization failed.");
+        while (1);
     } else {
         Serial.println("SD Card initialized successfully.");
     }
