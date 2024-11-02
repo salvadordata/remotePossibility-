@@ -74,6 +74,7 @@ void setup() {
     Serial.begin(115200);
     Serial.println("Starting setup...");
 
+    // M5Stack configuration and initialization
     auto cfg = M5.config();
     cfg.output_power = true;
     M5.begin(cfg);
@@ -83,20 +84,34 @@ void setup() {
     displayIntro();
     Serial.println("Display intro complete.");
 
-    // Initialize SPI communication
-    SPI.begin(40, 39, 14, SD_CS_PIN);
+    // SD Card initialization with detection check and retry mechanism
+    const int maxRetries = 3;
+    int attempt = 0;
+    bool sdInitialized = false;
 
-    // SD Card initialization with detection check
-    if (!SD.begin(SD_CS_PIN)) {
+    while (attempt < maxRetries && !sdInitialized) {
+        if (SD.begin()) {
+            sdInitialized = true;
+            Serial.println("SD Card initialized successfully.");
+        } else {
+            attempt++;
+            Serial.println("SD Card initialization failed. Attempt " + String(attempt) + " of " + String(maxRetries));
+            delay(1000); // Wait for a second before retrying
+        }
+    }
+
+    if (!sdInitialized) {
+        // If initialization fails after all retries, display an error message
         M5.Display.setCursor(0, 100);
         M5.Display.setTextSize(2);
         M5.Display.setTextColor(RED);
         M5.Display.println("SD Card Mount Failed");
-        Serial.println("SD Card initialization failed.");
-        while (1);
-    } else {
-        Serial.println("SD Card initialized successfully.");
+        Serial.println("SD Card initialization failed after " + String(maxRetries) + " attempts.");
+
+        // Additional guidance for the user
+        Serial.println("Please check if the SD card is inserted properly or try using a different SD card.");
     }
+}
 
     // Initialize IR receiver
     Serial.println("Initializing IR Receiver...");
